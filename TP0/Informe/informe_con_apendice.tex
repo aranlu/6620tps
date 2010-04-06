@@ -1,0 +1,387 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage{graphicx}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+
+\title{ \textbf{ 6620. Organizaci\'on de Computadoras\\
+Trabajo Pr\'actico 0: \\
+Infraestructura B\'asica}}
+
+\author{	Gonz\'alez, Juan Manuel, \textit{Padr\'on Nro. 79.979} \\
+            	\texttt{ juan0511@yahoo.com } \\[2.5ex]
+		Smocovich, Elizabeth, \textit{Padr\'on Nro. 86.326} \\
+            	\texttt{ liz.smocovich@gmail.com } \\[2.5ex]
+            	Pereira, Maria Florencia, \textit{Padr\'on Nro. 88.816} \\
+            	\texttt{ mflorenciapereira@gmail.com } \\[2.5ex]
+            	\normalsize{1er. Cuatrimestre de 2010} \\
+            	\normalsize{66.20 Organizaci\'on de Computadoras  $-$ Pr\'atica Jueves} \\
+            	\normalsize{Facultad de Ingenier\'ia, Universidad de Buenos Aires} \\
+       }
+
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}  % quita el nmero en la primer pagina
+
+
+\begin{abstract}
+El presente trabajo tiene como objetivo familiarizarse con las herramientas de software que ser\'an usadas en los siguientes trabajos, implementando un programa (y su correspondiente documentaci\'on) que resuelva el problema piloto planteado, una versi\'on en ANSI C del comando \textit{dc} de UNIX, que implementa una calculadora en notaci\'on polaca inversa. A su vez, se utilizar\'a el programa GXemul para simular un entorno de desarrollo en una m\'aquina MIPS (corriendo una reciente versi\'on del sistema operativo NetBSD), a fin de obtener el c\'odigo en Assembly MIPS32 de la implementaci\'on realizada.
+
+\end{abstract}
+
+\pagebreak
+
+\pagestyle{empty}
+\section{Introducci\'on}
+Al comenzar a utilizar nuevas herramientas, en cualquier \'ambito, es necesaria una breve introduccion al funcionamiento de las mismas: tener una nocio\'n de las prestaciones que ofrecen, asi tambi\'en como de sus limitaciones.\\
+Como primer objetivo en la materia, nos proponemos adentrarnos en el funcionamiento del emulador GXemul. Nuestra meta ser\'a emular una plataforma MIPS DECstation 5000/200 (ejecutando un sistema operativo NetBSD), para poder desde all\'i desarrollar programas en ANSI C. Estos ser\'an compilados y ejecutados haciendo uso de la herramienta GCC (compilador C GNU), mediante el cual tambi\'en ser\'a posible obtener, a posteriori, el c\'odigo MIPS32 del programa.\\
+Como \'ultimo punto, aprenderemos los rudimientos de LaTeX para generar la documentaci\'on relevante al trabajo pr\'actico.
+
+\section{Programa a implementar}
+Se trata de una una versi\'on en ANSI C del comando \textit{dc} de UNIX, que implementa una calculadora en notaci\'on polaca inversa.
+\\
+La entrada del programa esta especificada en uno o m\'as archivos. En caso de no especificarse uno, el programa leer\'a comandos de \textit{stdin}. Debe notarse tambi\'en que el archivo de nombre '-' representa stdin. El programa escribe la salida en \textit{stdout}. Los mensajes de error deben indicarse via \textit{stderr}.
+\\
+A continuaci\'on se describen los comandos disponibles:\\
+\\
+\begin{tabular}{|l|l|}
+\hline
+Comando & Descripci\'on \\ \hline
+f & Vacia el contenido de la pila, imprimiendo sus contenidos. \\
+p & Imprime el valor del tope de la pila, sin alterar la pila. Agrega un caracter de fin de linea. \\
+n & Toma el valor del tope de la pila y lo imprime, sin agregar un caracter de fin de linea. \\
++ - * \% / & Toma los 2 valores en el tope de la pila y empuja el resultado de la operacion. \\
+v & Calcula el valor de la raiz cuadrada del elemento en el tope de la pila. \\
+c & Vacia la pila. \\
+d & Duplica el valor en la cima de la pila. \\
+r & Invierte el orden del primer y segundo elemento de la pila. \\
+\hline
+\end{tabular}
+
+\section{Consideraciones sobre el desarrollo}
+A continuaci\'on se detallan las consideraciones tenidas en cuenta para el desarrollo del trabajo pr\'actico. Hemos decidido separar las que surgen del Dise\~no de las que surgen en la implementaci\'on.
+
+\subsection{Consideraciones de Dise\~no}
+
+El programa a desarrollar consta a grandes rasgos de un int\'erprete de operaciones y una estructura LIFO donde son almacenados los operandos y los resultados de las operaciones efectuadas. La pila ha sido implementada como un TDA, y se encuentra codificada en un conjunto de archivos independientes. El resto de las funciones utilizadas se concentran en un solo archivo, ya que se consider\'o innecesaria una mayor modularizaci\'on, en base a la baja complejidad y extensi\'on de los algoritmos implementados.\\
+El procesamiento e interpretaci\'on de los comandos ingresados desde la consola es manejado mediante la biblioteca 'getopt', evitando as\'i la implementaci\'on de un parser para este fin. En cuanto a los datos ingresados en s\'i, la aplicaci\'on ha sido dise\~nada para que el interprete de operaciones reciba siempre una \'unica cadena de caracteres con toda la informaci\'on a procesar. En caso de que se especifiquen varios archivos como entrada, primero se concatenan y luego se llama al int\'erprete con una sola cadena de datos. La salvedad es cuando se opera directamente tomando \textit{stdin} como entrada, ya que en este modo el ingreso y procesamiento de datos es interactivo. Para poder resolver esto, se gener\'o una funci\'on que es invocada solamente en este caso y va enviando al int\'erprete las lineas que el usuario ingresa. Como no se sabe a priori la cantidad de datos que se ingresar\'an, la reserva de memoria es realizada en forma din\'amica.\\
+Finalmente, cabe destacar que todas las impresiones del programa son ruteadas por \textit{stdout}, y los mensajes de error a trav\'es de \textit{stderr}.\\
+\\ 
+Los c\'odigos que el programa devuelve al SO son los siguientes:\\
+\\
+0: Ejecuci\'on sin problemas.\\
+1: Error de ejecuci\'on.\\
+\\
+
+\subsection{Consideraciones de Implementaci\'on}
+
+Cabe destacar que para implementar el trabajo pr\'actico se parti\'o de la totalidad del programa implementado en lenguage C (ANSI) y luego se procedi\'o a traducir a assembly de MIPS el c\'odigo final, con el uso de GCC.
+
+\subsubsection{Portabilidad de la soluci\'on}
+El programa est\'a dise\~nado para poder ser ejecutado en diferentes plataformas, como por ejemplo NetBSD (PMAX) y la versi\'on de Linux usada para correr el simulador, GNU/Linux (i686). El haber codificado el proyecto en leguage ANSI C garantiza que pueda ser compilado en ambas plataformas sin problemas, dotando al programa de un grado m\'inimo de portabilidad.\\
+Por otro lado, se destaca que se entrega junto con el presente informe dos versiones del c\'odigo fuente, una en formato C y la otra en c\'odigo assembly MIPS.
+
+\subsubsection{Descripci\'on del la pila utilizada}
+Para implementar la pila que utiliza la calculadora desarrollada se ha utilizado una estructura LIFO din\'amica, almacenada completamente en memoria, utilizando punteros para vincular los distintos nodos. Se ha tambi\'en dotado a esta implementaci\'on la posibilidad de trabajar con cualquier tipo de datos, siendo necesario definir el dato a utilizar en el c\'odigo y pasando a las primitivas el tama\~no del dato definido. Para este trabajo pr\'actico se trabaja con datos del tipo double como elementos de la pila.\\
+Se aclara que el dise\~no de esta estructura se ha basado en el utilizado para la materia 'Algoritmos y Programaci\'on II' de esta facultad, aunque se han realizado diversas modificaciones a ese disen\~o, notablemente la reducci\'on del set de primitivas a las de creaci\'on, push y pop. Todas las validaciones que es necesario realizar a la hora de operar con la estructura han sido incluidas en estas dos u\'ltimas primitivas, lo que consideramos simplifica notablemente su operaci\'on.
+
+\subsubsection{Descripci\'on del algoritmo de ejecuci\'on de comandos}
+El algoritmo desarrollado es muy simple, recibe como par\'ametros una cadena de caracteres y la pila de la calculadora. En la primera de las estructuras mencionadas se encuentran almacenados todos los datos que se han ingresado al programa, independientemente de cual haya sido el m\'etodo de entrada utilizado. Para llevar a cabo su cometido, la funci\'on se encarga de recorrer esta estructura posici\'on por posici\'on y validar los datos all\'i presentes. Si se trata de un valor num\'erico, el mismo se inserta en la pila, caso contrario se valida que el caracter detectado sea una operaci\'on o comando v\'alido. En caso de ser v\'alido se reliza la operaci\'on correspondiente, y en caso contrario se emite por \textit{stderr} un mensaje de error, de manera similar al comando \textit{dc} original.
+
+\section{Generaci\'on de ejecutables y c\'odigo assembly}
+Para generar el ejecutable del programa, debe correrse la siguiente sentencia en una terminal:
+\begin{verbatim}
+$ gcc -Wall -O0 -o tp0 tp0.c stack.h stack.c
+\end{verbatim}
+
+Para generar el c\'odigo MIPS32, debe ejecutarse lo siguiente:
+\begin{verbatim}
+$ gcc -Wall -O0 -S -mrnames tp0.c stack.h stack.c
+\end{verbatim}
+
+N\'otese que para ambos casos se han deshaibilitado las optimizaciones del compilador (-O0) y se han activado todos los mensajes de 'Warning' (-Wall). Adem\'as, para el caso de MIPS, se han habilitado otras dos banderas, '-S' que detiene al compilador luego de generar el assembly y '-mrnames' que tiene como objetivo generar la salida utilizando los nombres de los registros en vez de los n\'umeros de registros.
+\pagebreak
+
+\section{Corridas de pruebas}
+
+En esta seccion se presentan algunas de las distintas corridas que se realizaron para probar el funcionamiento del trabajo pr\'actico.\\
+\\
+En primer lugar se mostr\'o el mensaje de ayuda:\\
+\begin{verbatim}
+$ ./tp0 -h
+Uso:
+  tp0 -h
+  tp0 -V
+  tp0 [options]
+Options:
+  -V,  --version               Version.
+  -h,  --help                  Ayuda.
+  -f,  --scriptfile scrptfile  Ejecuta los comandos especificados en el scriptfile.
+  -e,  --script script         Ejecuta los comandos en el script.
+Examples:
+  tp0
+  tp0 -e"22+5*p"
+  tp0 -f calculo.m
+\end{verbatim}
+Luego se imprimi\'o la versi\'on del programa:\\
+\begin{verbatim}
+$ ./tp0 -V
+TP0: 1.0
+\end{verbatim}
+A continuaci\'on se muestran 8 ejemplos mostrando las diversas formas que existen para ejecutar el programa, y la salida obtenida para cada uno de estos casos.
+\begin{verbatim}
+$echo "4 2 + 3*p" | ./tp0
+18
+
+$cat tmp1 _2 1 +
+$cat tmp2 p 3 4 *p
+$./tp0 --scriptfile tmp1 tmp2
+-1
+12
+
+$./tp0 -e "1 2 + 3 + 4+ p"
+10
+
+$./tp0 -e "1 2 3f"
+3
+2
+1
+
+$./tp0 -e "1 2 + c 4"
+
+$./tp0 -e "1 2 df"
+2
+2
+1
+
+$./tp0 -e "p"
+ERROR: Pila vacia.
+
+$ ./tp0
+2 3 4
++
+t
+ERRROR: 't' no implementado.
+f
+7.00000000
+2.00000000
+f
+ERROR: Pila vacia.
+
+\end{verbatim}
+\pagebreak
+
+\section{C\'odigo ANSI C} 
+
+A continuaci\'on se incluye el c\'odigo fuente del programa.
+\pagebreak
+
+\section{C\'odigo MIPS32} 
+
+A continuaci\'on se incluye el c\'odigo MIPS32 del programa.
+
+\pagebreak
+
+\section{Enunciado} 
+
+A continuaci\'on se incluye el enunciado original del tr\'abajo pr\'actico.
+\pagebreak
+
+\section{Conclusiones}
+Como conclusi\'on, podemos considerar que hemos logrado obtener un buen manejo de las herramientas introducidas en este primer proyecto.
+
+\pagebreak
+
+\begin{thebibliography}{99}
+
+\bibitem{GXEMUL} GXemul, http://gavare.se/gxemul/
+
+\bibitem{LATEX} Oetiker, Tobias, "The Not So Short Introduction To LaTeX2", http://www.physics.udel.edu/$\sim$dubois/lshort2e/
+
+\bibitem{DC} dc (Computer Program), http://en.wikipedia.org/wiki/Dc\_(computer\_program)
+
+\bibitem{LIBROC} Kernighan, Brian W. / Ritchie, Dennis M. \underline{El Lenguaje De Prorgamaci\'on C}. Segunda Edici\'on, PRENTICE-HALL HISPANOAMERICANA SA, 1991.
+
+\end{thebibliography}
+\pagebreak
+
+\section{Ap\'endice: modificaciones al c\'odigo para la segunda entrega}
+
+Se modific\'o la funci\'on ejecutar().
+
+\begin{verbatim}
+void ejecutar(char* script, tda_stack* pila){
+
+	char* acum = (char*) malloc((strlen(script)+1)*sizeof(char));
+	int i;
+	int j;
+	double nro;
+	double a, b,c;
+	int res;
+
+	strcpy(acum,"");
+	strcat(script," ");
+	i=0;
+	j=0;
+
+	while(i<strlen(script)){
+		if(isdigit(script[i])){
+			acum[j]=script[i];
+			j++;
+		}
+		else if(script[i]=='_'){
+				acum[j]='-';
+				j++;
+			}else if(script[i]=='.'){
+					acum[j]='.';
+					j++;
+				}else{
+					acum[j]='\0';
+					nro=atof(acum);
+
+					if(strcmp(acum,"")!=0){
+						if((nro==0.0)&&(strcmp(acum,"0")!=0)) fprintf(stderr, "ERROR: Caracteres invalidos.\n") ;
+						else{
+							tda_stack_push(pila,&nro);
+						}
+					};
+				j=0;
+				switch(script[i]){
+
+					case '+': /*SUMA*/
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							res=tda_stack_pop(pila,&b);
+							if(res){
+								c=a+b;
+								tda_stack_push(pila,&c);
+							}else fprintf(stderr, "ERROR: No hay segundo operando.\n");
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case '-': /* RESTA*/
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							res=tda_stack_pop(pila,&b);
+
+							if(res){
+								c=a-b;
+								tda_stack_push(pila,&c);
+							}else fprintf(stderr, "ERROR: No hay segundo operando.\n");
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case '*': /*MULTIPLICACION*/
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							res=tda_stack_pop(pila,&b);
+							if(res){
+								c=a*b;
+								tda_stack_push(pila,&c);
+							}else fprintf(stderr, "ERROR: No hay segundo operando.\n");
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case '%': /*RESTO*/
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							res=tda_stack_pop(pila,&b);
+							if(res){
+								c=(int)a % (int)b;
+								tda_stack_push(pila,&c);
+							}else fprintf(stderr, "ERROR: No hay segundo operando.\n");
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case '/': /*DIVISION*/
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							res=tda_stack_pop(pila,&b);
+							if(res){
+								if(b!=0){
+									c=a/b;
+									tda_stack_push(pila,&c);
+								}else fprintf(stderr, "ERROR: Division por 0.\n");
+							}else fprintf(stderr, "ERROR: No hay segundo operando.\n");
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case 'f': /* vacia la pila e imprime contenido*/
+						res=tda_stack_pop(pila,&a);
+						if(!res) fprintf(stderr, "ERROR: Pila vacia.\n ");
+						while(res){
+							printf("%.8f\n",a);
+							res=tda_stack_pop(pila,&a);
+						};
+					break;
+
+					case 'p': /*imprimer el primer valor, sin alterar la pila. Imprime \n */
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							printf("%.8f\n",a);
+							tda_stack_push(pila,&a);
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case 'n': /*toma tope de la pila e imprime. no agrega \n*/
+						res=tda_stack_pop(pila,&a);
+						if(res) printf("%.8f",a);
+						else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+
+					case 'v': /* sqrt del tope */
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							b=sqrt (a);
+							tda_stack_push(pila,&b);
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+	
+					case 'c': /*vaciar pila*/
+						res=tda_stack_pop(pila,&a);
+						if(!res) fprintf(stderr, "ERROR: Pila vacia.\n");
+						destruir_stack(pila);
+					break;
+	
+					case 'd': /*duplicar el valor en la cima */
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							tda_stack_push(pila,&a);
+							tda_stack_push(pila,&a);
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+	
+					case 'r': /*invierte el orden del primer y segundo elemento de la pila */
+						res=tda_stack_pop(pila,&a);
+						if(res){
+							res=tda_stack_pop(pila,&b);
+							if(res){
+								tda_stack_push(pila,&a);
+								tda_stack_push(pila,&b);
+							}else {
+								tda_stack_push(pila,&a);
+								fprintf(stderr, "ERROR: Hay un unico elemento en la pila.\n");
+							};
+						}else fprintf(stderr, "ERROR: Pila vacia.\n");
+					break;
+	
+					case ' ':
+					break;
+	
+					case '\n':
+					break;
+
+					default:
+						fprintf(stderr, "ERRROR: '%c' no implementado.\n",script[i]);
+					break;
+				}
+			}
+		i++;
+	};
+	free(acum);
+}
+\end{verbatim}
+
+\end{document}
