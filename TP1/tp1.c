@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-
+float* y;
 
 
 #define BUFFER_SIZE	10
@@ -566,6 +566,10 @@ int i;
 ileido=0;
 fleido=0;
 
+int pulso=0;
+int archivo=0;
+int errors=0;
+
 int opcion;
 const char* const short_options = "hVr:p:";
 
@@ -596,6 +600,7 @@ const char* const short_options = "hVr:p:";
 			    	opt=1;
 			    	break;
 			    case 'r':   /* -r o --response */
+				if((!pulso)&&(!archivo)){
 			    	lista_archivos=1;
 			    	res=leer_archivo(optarg,&h,&hsize,&ileido,&fleido); 
 				if(ileido>1) printf("ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos. \n",optarg);
@@ -603,18 +608,40 @@ const char* const short_options = "hVr:p:";
 				if((fleido>=1)&&(ileido==0)) printf("ERROR: la sintaxis del archivo %s es incorrecta.\n",optarg);
 			    	if(res==3) fprintf(stderr,"ERROR: No se pudo abrir el archivo %s.\n",optarg);
 			    	if(res==2) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos.\n",optarg);
-			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n",optarg);
+			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n");
 			    	opt=1;
+				archivo=1;
+				} else{
+
+					fprintf(stderr,"ERROR: la sintaxis del pulso ingresado es incorrecta.\n");
+					errors=1;
+
+
+				};
 			    	break;
 			    case 'p':   /* -p o --pulse */
+
+				if((!pulso)&&(!archivo)){
 				res=generar_pulso(optarg,&h,&hsize);
-			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n",optarg);
-			    	if(res==2) fprintf(stderr,"ERROR: la sintaxis del pulso ingresado es incorrecta.\n",optarg);
+			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n");
+			    	if(res==2) fprintf(stderr,"ERROR: la sintaxis del pulso ingresado es incorrecta.\n");
+
 
 
 			    	opt=1;
 				ileido=1;
 				fleido=1;
+
+				pulso=1;
+
+				} else{
+
+
+					fprintf(stderr,"ERROR: la sintaxis del pulso ingresado es incorrecta.\n");
+					errors=1;
+	
+
+				}
 			    	break;
 			    case 'V':   /* -V o --version */
 			    	imprimir_version (stdout, 0);
@@ -695,6 +722,10 @@ if(x==NULL){
 }
 
 /* tengo h y x*/
+
+if(!errors){
+/*no hay error de sintaxis: -r y -p*/
+
 i=0;
 
 /* si x tiene menos elementos que h, repito x*/
@@ -713,16 +744,45 @@ if(xsize<hsize){
 }
 
 
+/* reservo espacio para y, xsize + hsize -1 */
+
+y=(float*)malloc((xsize+hsize-1)*sizeof(float));
+
+
+if(y!=NULL){
+
 /* LLAMAR A CONVOLUCIÓN*/
 
+conv(x,xsize,h,hsize);
 
-/* HASTA ACA EL PROGRAMA*/
+};
+
+/*imprimo y*/
+
+printf("%s","[ \n");
+
+for(i=0;i<xsize+hsize-1;i++){
+
+
+	printf("%.2f ",y[i]);
+
+
+}
+
+printf("%s","]\n");
 
 
 
+/* LIBERO Y*/
+
+if(y!=NULL)
+free(y);
 
 
+}
 
+
+/*
 printf("\n\n X es:");
 i=0;
 while(i<xsize){
@@ -743,12 +803,24 @@ printf(" %f \n",h[i]);
 
 i++;
 }
+*/
 
+
+
+/*LIBERO H y X*/
 if(h!=NULL)
 free(h);
 
 if(x!=NULL)
 free(x);
+
+
+
+
+
+
+
+
 
 
 
