@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include "dconv.h"
 float* y;
 
 
@@ -86,7 +87,6 @@ int push_back(float** vector,int* size, float f){
 
 	
 	float* aux;
-	char currentChar;
 
 	if(*vector==NULL){
 
@@ -146,7 +146,7 @@ acum[0]='\0';
 while((i<strlen(linea))&&(!error)){
 
 
-		if((isdigit(linea[i]))||(linea[i]=='-')||(linea[i]=='.')){
+		if((isdigit((unsigned char)linea[i]))||(linea[i]=='-')||(linea[i]=='.')){
 			acum[j]=linea[i];
 			j++;
 		}else if(linea[i]==' ') {
@@ -243,7 +243,7 @@ int generar_pulso(char* parametros, float** h, int* hsize){
 	while((i<strlen(parametros))&&(!error)){
 
 
-		if((isdigit(parametros[i]))||(parametros[i]=='-')||(parametros[i]=='.')){
+		if((isdigit((unsigned char)parametros[i]))||(parametros[i]=='-')||(parametros[i]=='.')){
 			acum[j]=parametros[i];
 			j++;
 		}else {
@@ -552,7 +552,6 @@ int leer_archivo(char* nombre,float** h,int* hsize, int* ileido, int* fleido){
 
 int main(int argc, char** argv){
 
-int size=0;
 
 float* h=NULL;
 float* x=NULL;
@@ -678,7 +677,7 @@ const char* const short_options = "hVr:p:";
 				if((fleido>=1)&&(ileido==0)) printf("ERROR: la sintaxis del archivo %s es incorrecta. \n",optarg);
 			    	if(res==3) fprintf(stderr,"ERROR: No se pudo abrir el archivo %s.\n",optarg);
 			    	if(res==2) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos.\n",optarg);
-			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n",optarg);
+			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n");
 			
 
 
@@ -759,7 +758,7 @@ conv(x,xsize,h,hsize);
 
 /*imprimo y*/
 
-printf("%s","[ \n");
+printf("%s","[ ");
 
 for(i=0;i<xsize+hsize-1;i++){
 
