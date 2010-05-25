@@ -569,20 +569,12 @@ int leerEntrada(FILE* stream, t_entrada* datosEntrada ){
 
 
 
-//        t_entrada datosEntrada;
+
         char* aux;
         char currentChar;
-//        int index=0;
+
 	int error=0;
 
-
-//        datosEntrada.data = (char *) calloc( BUFFER_SIZE + 1, sizeof(char) );
- //       if ( datosEntrada.data == NULL ){
-//                fprintf(stderr, "ERROR: No hay memoria suficiente para comenzar el procesamiento...\n");
-//                return (1);
- //       }
-   //     datosEntrada.length = 0;
-     //   datosEntrada.allocated = BUFFER_SIZE;
 
         do{
                 currentChar=fgetc(stream);
@@ -608,34 +600,7 @@ int leerEntrada(FILE* stream, t_entrada* datosEntrada ){
                         case EOF:{
 
 
-				//datosEntrada.data[index] = '\0';
-				//error=0;
-
-				/*if(!*ileido) {
-
-
-				error=check_order(datosEntrada.data);
-				}
-
-				if(!error){
-					if(!(*ileido)) *ileido=check_caracter(datosEntrada.data,'[');
-					*fleido=check_caracter(datosEntrada.data,']');
-					error=armar_vector(datosEntrada.data,h,hsize);
-
-				}
-                                */
-
-/*                                free(datosEntrada.data);
-
-
-                                datosEntrada.data = (char *) calloc( BUFFER_SIZE + 1, sizeof(char) );
-                                if ( datosEntrada.data == NULL ){
-                                        fprintf(stderr, "ERROR: No hay memoria suficiente para continuar el procesamiento...\n");
-                                        return (1);
-                                }
-                                datosEntrada.length = 0;
-                                datosEntrada.allocated = BUFFER_SIZE;
-                                index = 0;*/
+			
                                 break;
                         }
                         default:{
@@ -647,13 +612,13 @@ int leerEntrada(FILE* stream, t_entrada* datosEntrada ){
                 fflush(stdout);
         }
         while ((currentChar!= EOF)&&(!error));
-//        free(datosEntrada.data);
+
 
 
 
 
 return 0;
-//        return (error);
+
 }
 
 /* leer_archivo:
@@ -744,11 +709,7 @@ const char* const short_options = "hVr:p:";
 				if((!pulso)&&(!archivo)){
 			    	lista_archivos=1;
 			    	res=leer_archivo(optarg,&entradah);
-//				if(ileido>1) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos. \n",optarg);
-//				if(fleido>1) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos. \n",optarg);
-//				if((fleido>=1)&&(ileido==0)) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta.\n",optarg);
 			    	if(res==3) fprintf(stderr,"ERROR: No se pudo abrir el archivo %s.\n",optarg);
-//			    	if(res==2) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos.\n",optarg);
 			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n");
 			    	opt=1;
 				archivo=1;
@@ -814,11 +775,7 @@ const char* const short_options = "hVr:p:";
 
 
 			    	res=leer_archivo(argv[i],&entradah); 
-//				if(ileido>1) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos. \n",optarg);
-//				if(fleido>1) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos. \n",optarg);
-//				if((fleido>=1)&&(ileido==0)) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta. \n",optarg);
 			    	if(res==3) fprintf(stderr,"ERROR: No se pudo abrir el archivo %s.\n",optarg);
-//			    	if(res==2) fprintf(stderr,"ERROR: la sintaxis del archivo %s es incorrecta o hay caracteres inválidos.\n",optarg);
 			    	if(res==1) fprintf(stderr,"ERROR: No hay memoria suficiente para continuar.\n");
 			
 
