@@ -1,0 +1,48 @@
+#!/bin/bash
+
+#instalador
+
+ok=1
+
+#verifico que tenga instalado gprof
+resg=`gprof --version 2> /dev/null`
+#verifico que tenga instalado valgrind
+resv=`valgrind --version 2> /dev/null`
+
+
+if [ -z "$resg" ]
+then 
+
+	ok=0
+	echo "ERROR: no se encuentra instalado gprof." >&2
+
+fi
+if [ -z "$resv" ]
+then 
+
+	ok=0
+	echo "ERROR: no se encuentra instalado valgrind." >&2
+
+
+fi
+
+
+if [ $ok -eq 1 ]
+then
+#compilacion para gprof normal
+gcc -g mmult.c -o mmultg -pg
+
+#compilación para valgrind normal
+gcc -g mmult.c -o mmultv
+
+#agregar la compilación para optimizado
+
+echo "La intalación ha finalizado correctamente."
+echo "Para ejecutar el programa escriba ./tp2 [opciones]"
+
+fi
+
+
+
+
+	
