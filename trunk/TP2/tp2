@@ -3,9 +3,12 @@
 
 # argumentos
 
+ok=0
+
 if [ $# -gt 1 ]; #error en la cantidad de parámetros
 then
 	echo "ERROR: cantidad de parámetros inválida." >&2
+	ok=0
 
 elif [[ $1 == "-h" || $1 == "--help" ]];
 then
@@ -16,18 +19,24 @@ then
 	echo "Options:"
         echo  "  -V,  --version               Imprime la version y termina."
         echo  "  -h,  --help                  Imprime esta informacion y termina."
+	ok=0
 
 elif [[ $1 == "-V" || $1 == "--version" ]];
 then
 	echo "tp2: 1.0"
+	ok=0
 elif [ $# -eq 1 ]
 then
 	echo "ERROR: opción inválida." >&2
+	ok=0
+else
+
+	ok=1
 fi
 
 dir="/sys/devices/system/cpu/cpu0/cache/index"
 
-if [ $# -eq 0 ]
+if [ $ok -eq 1 ]
 then
 #obtengo los datos de la memoria cache de datos L1
 
