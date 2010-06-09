@@ -1,0 +1,108 @@
+#!/bin/bash
+
+dir="/sys/devices/system/cpu/cpu0/cache/index"
+
+
+# argumentos
+
+if [ $# -gt 1 ] #error en la cantidad de parámetros
+then
+	echo "ERROR: cantidad de parámetros inválida." >&2
+
+
+elif [ $1 == "-h" -o $1 == "--help" ]
+then
+	echo "Uso:"
+	echo "  ./tp2 -h"
+	echo "  ./tp2 -V"
+	echo "  ./tp2"
+	echo "Options:"
+        echo  "  -V,  --version               Imprime la version y termina."
+        echo  "  -h,  --help                  Imprime esta informacion y termina."
+
+elif [ $1 == "-V" -o $1 == "--version" ]
+then
+	echo "tp2: 1.0";
+else
+	echo "ERROR: opción inválida." >&2
+fi
+
+
+
+if [ $# -eq 0 ]
+then
+#obtengo los datos de la memoria cache de datos L1
+
+size=`cat "${dir}0/size"`
+sets=`cat "${dir}0/number_of_sets"`
+ways=`cat "${dir}0/ways_of_associativity"`
+
+#calculo el tamaño de la línea
+kbytes=` echo "$size"| sed "s/^\([^K]*\)K/\1/"`
+linea=`echo "$kbytes*(2^10)/($sets*$ways)" | bc`
+
+#PROGRAMA SIN OPTIMIZACIONES
+
+
+#ejecución con gprof
+echo "Obteniendo el tiempo de ejecución en modo normal ..."
+./mmultg
+tiempo_normal=`gprof mmultg | grep -w "main" | sed "s/^\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*$/\3/"`
+
+
+#ejecución con valgrind
+echo "Obteniendo la tasa de miss en modo normal ..."
+valgrind --log-file=salida.out --tool=cachegrind ./mmultv
+mr_normal=`grep -w "miss rate" salida.out | grep -w "D1" | sed "s/==[0-9][0-9][0-9][0-9]== D1 \s*miss rate:\s*\(\S*\)%\s*.*$/\1/"`
+if [ -e "salida.out" ] 
+then
+echo ""
+#	rm salida.out
+fi
+
+
+#PROGRAMA CON OPTIMIZACIONES
+
+#compilacion para gprof
+
+#ejecución con gprof
+echo "Obteniendo el tiempo de ejecución en modo normal ..."
+./mmult
+tiempo_normal=`gprof mmult | grep -w "main" | sed "s/^\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*$/\3/"`
+
+
+#compilación para valgrind
+
+#ejecución con valgrind
+echo "Obteniendo la tasa de miss en modo normal ..."
+valgrind --log-file=salida.out --tool=cachegrind ./mmult
+mr_normal=`grep -w "miss rate" salida.out | grep -w "D1" | sed "s/==[0-9][0-9][0-9][0-9]== D1 \s*miss rate:\s*\(\S*\)%\s*.*$/\1/"`
+if [ -e "salida.out" ] 
+then
+echo ""
+#	rm salida.out
+fi
+
+
+
+
+
+
+#resultados
+
+echo ""
+echo "Cache de datos L1:"
+echo "#Vías: $ways"
+echo "Tamaño: $size"
+echo "Cantidad de sets: $sets"
+echo "Tamaño de la línea: $linea"
+
+echo ""
+
+echo "Tiempo de ejecución en modo normal: $tiempo_normal ms "
+echo "Tasa de miss en modo normal: $mr_normal "
+
+
+fi
+
+
