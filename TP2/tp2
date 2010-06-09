@@ -1,16 +1,13 @@
 #!/bin/bash
 
-dir="/sys/devices/system/cpu/cpu0/cache/index"
-
 
 # argumentos
 
-if [ $# -gt 1 ] #error en la cantidad de parámetros
+if [ $# -gt 1 ]; #error en la cantidad de parámetros
 then
 	echo "ERROR: cantidad de parámetros inválida." >&2
 
-
-elif [ $1 == "-h" -o $1 == "--help" ]
+elif [[ $1 == "-h" || $1 == "--help" ]];
 then
 	echo "Uso:"
 	echo "  ./tp2 -h"
@@ -20,14 +17,15 @@ then
         echo  "  -V,  --version               Imprime la version y termina."
         echo  "  -h,  --help                  Imprime esta informacion y termina."
 
-elif [ $1 == "-V" -o $1 == "--version" ]
+elif [[ $1 == "-V" || $1 == "--version" ]];
 then
-	echo "tp2: 1.0";
-else
+	echo "tp2: 1.0"
+elif [ $# -eq 1 ]
+then
 	echo "ERROR: opción inválida." >&2
 fi
 
-
+dir="/sys/devices/system/cpu/cpu0/cache/index"
 
 if [ $# -eq 0 ]
 then
