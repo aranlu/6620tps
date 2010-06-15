@@ -54,14 +54,6 @@ ways=`cat "datos.dat"| head -n3 | tail -n1`
 linea=`cat "datos.dat"| head -n4 | tail -n1`
 
 
-#size=`cat "${dir}0/size"`
-#sets=`cat "${dir}0/number_of_sets"`
-#ways=`cat "${dir}0/ways_of_associativity"`
-
-#calculo el tamaño de la línea
-#kbytes=` echo "$size"| sed "s/^\([^K]*\)K/\1/"`
-#linea=`echo "$kbytes*(2^10)/($sets*$ways)" | bc`
-
 #PROGRAMA SIN OPTIMIZACIONES
 
 echo 
@@ -78,7 +70,7 @@ mr_normal=`grep -w "miss rate" salida.out | grep -w "D1" | sed "s/==[0-9]*== D1 
 if [ -e "salida.out" ] 
 then
 echo ""
-#	rm salida.out
+	rm salida.out
 fi
 
 
@@ -100,7 +92,7 @@ mr_ca=`grep -w "miss rate" salidaca.out | grep -w "D1" | sed "s/==[0-9]*== D1 \s
 if [ -e "salidaca.out" ] 
 then
 echo ""
-#	rm salidaca.out
+	rm salidaca.out
 fi
 
 
