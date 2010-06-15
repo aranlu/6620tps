@@ -1,0 +1,123 @@
+#!/bin/bash
+
+#instalador
+
+ok=1
+
+#verifico que tenga instalado gprof
+resg=`gprof --version 2> /dev/null`
+#verifico que tenga instalado valgrind
+resv=`valgrind --version 2> /dev/null`
+
+
+if [ -z "$resg" ]
+then 
+
+	ok=0
+	echo "ERROR: no se encuentra instalado gprof." >&2
+
+fi
+if [ -z "$resv" ]
+then 
+
+	ok=0
+	echo "ERROR: no se encuentra instalado valgrind." >&2
+
+
+fi
+
+if [ -e "datos.dat" ]
+then 
+
+	ok=0
+	echo "ERROR: ya se ha instalado el programa." >&2
+
+
+fi
+
+
+if [ $ok -eq 1 ]
+then
+
+#obtengo los datos de la memoria L1
+dir="/sys/devices/system/cpu/cpu0/cache/index"
+
+size=`cat "${dir}0/size"`
+sets=`cat "${dir}0/number_of_sets"`
+ways=`cat "${dir}0/ways_of_associativity"`
+
+#calculo el tamaño de la línea
+kbytes=` echo "$size"| sed "s/^\([^K]*\)K/\1/"`
+linea=`echo "$kbytes*(2^10)/($sets*$ways)" | bc`
+elem=`echo "$linea/8" | bc`
+
+
+#modificaciones para la arquitectura actual
+
+#cantidad de elementos
+if [ $elem -ne 8 ]
+then
+	sed "s-#define CE 8-#define CE 16-" "mmult-ca.c" > "mmult-ca.new" 
+	mv "mmult-ca.new" "mmult-ca.c" 
+
+fi
+
+#expansion del for
+let hasta=$elem-1
+
+for i in $(seq 0 $hasta );
+do
+
+	sed "s-/\*EXPANSION\*/-c[i][j]+=a[i][k+$i]*b[k+$i][j];\n/\*EXPANSION\*/-" "mmult-ca.c" > "mmult-ca.new" 
+	mv "mmult-ca.new" "mmult-ca.c" 
+
+
+done
+
+
+#armo el archivo de datos
+echo "$size" > datos.dat
+echo "$sets" >> datos.dat
+echo "$ways" >> datos.dat
+echo "$linea" >> datos.dat
+echo "$elem" >> datos.dat
+
+
+
+
+#compilacion para gprof normal
+gcc -g -o0 mmult.c -o mmultg -pg
+
+#compilación para valgrind normal
+gcc -g -o0 mmult.c -o mmultv
+
+#compilacion para gprof cache aware
+gcc -g -o0 mmult-ca.c -o mmultcag -pg
+
+#compilación para valgrind cache aware
+gcc -g -o0 mmult-ca.c -o mmultcav
+
+
+
+
+#asigno permisos de ejecución
+
+
+chmod u+x tp2
+chmod u+x mmultg
+chmod u+x mmultv
+chmod u+x mmultcag
+chmod u+x mmultcav
+
+
+
+
+echo "La intalación ha finalizado correctamente."
+echo "Para ejecutar el programa escriba ./tp2 [opciones]"
+
+fi
+
+
+
+
+	

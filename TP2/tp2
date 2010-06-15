@@ -1,0 +1,143 @@
+#!/bin/bash
+
+
+# argumentos
+
+ok=0
+
+if [ $# -gt 1 ]; #error en la cantidad de parámetros
+then
+	echo "ERROR: cantidad de parámetros inválida." >&2
+	ok=0
+
+elif [[ $1 == "-h" || $1 == "--help" ]];
+then
+	echo "Uso:"
+	echo "  ./tp2 -h"
+	echo "  ./tp2 -V"
+	echo "  ./tp2"
+	echo "Options:"
+        echo  "  -V,  --version               Imprime la version y termina."
+        echo  "  -h,  --help                  Imprime esta informacion y termina."
+	ok=0
+
+elif [[ $1 == "-V" || $1 == "--version" ]];
+then
+	echo "tp2: 1.0"
+	ok=0
+elif [ $# -eq 1 ]
+then
+	echo "ERROR: opción inválida." >&2
+	ok=0
+else
+
+	ok=1
+fi
+
+#dir="/sys/devices/system/cpu/cpu0/cache/index"
+
+if [ ! -e "datos.dat" ]
+then
+	echo "ERROR: La instalación es incorrecta. Vuelva a instalar."
+	ok=0
+
+
+fi
+
+if [ $ok -eq 1 ]
+then
+#obtengo los datos de la memoria cache de datos L1
+
+size=`cat "datos.dat"| head -n1`
+sets=`cat "datos.dat"| head -n2 | tail -n1`
+ways=`cat "datos.dat"| head -n3 | tail -n1`
+linea=`cat "datos.dat"| head -n4 | tail -n1`
+
+
+#size=`cat "${dir}0/size"`
+#sets=`cat "${dir}0/number_of_sets"`
+#ways=`cat "${dir}0/ways_of_associativity"`
+
+#calculo el tamaño de la línea
+#kbytes=` echo "$size"| sed "s/^\([^K]*\)K/\1/"`
+#linea=`echo "$kbytes*(2^10)/($sets*$ways)" | bc`
+
+#PROGRAMA SIN OPTIMIZACIONES
+
+echo 
+#ejecución con gprof
+echo "Obteniendo el tiempo de ejecución en modo normal ..."
+./mmultg
+tiempo_normal=`gprof mmultg | grep -w "ejecutar" | grep -v "\[" | sed "s/^\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*.*$/\3/"`
+
+
+#ejecución con valgrind
+echo "Obteniendo la tasa de miss en modo normal ..."
+valgrind --log-file=salida.out --tool=cachegrind ./mmultv
+mr_normal=`grep -w "miss rate" salida.out | grep -w "D1" | sed "s/==[0-9]*== D1 \s*miss rate:\s*\(\S*\)%\s*.*$/\1/"`
+if [ -e "salida.out" ] 
+then
+echo ""
+#	rm salida.out
+fi
+
+
+#PROGRAMA CON OPTIMIZACIONES
+
+
+#ejecución con gprof
+echo "Obteniendo el tiempo de ejecución en modo optimizado ..."
+./mmultcag $linea
+tiempo_ca=`gprof mmultcag | grep -w "ejecutar" | grep -v "\[" | sed "s/^\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*\(\S*\)\s*.*$/\3/"`
+
+
+
+#ejecución con valgrind
+echo "Obteniendo la tasa de miss en modo optimizado ..."
+valgrind --log-file=salidaca.out --tool=cachegrind ./mmultcav $linea
+
+mr_ca=`grep -w "miss rate" salidaca.out | grep -w "D1" | sed "s/==[0-9]*== D1 \s*miss rate:\s*\(\S*\)%\s*.*$/\1/"`
+if [ -e "salidaca.out" ] 
+then
+echo ""
+#	rm salidaca.out
+fi
+
+
+#calculo de speedup y cociente de miss rates
+
+
+spu=`echo "scale=2;$tiempo_normal/$tiempo_ca" | bc -l`
+cmr=`echo "scale=2;$mr_normal/$mr_ca" | bc -l`
+
+
+
+
+
+
+#resultados
+
+echo ""
+echo "Cache de datos L1:"
+echo "#Vías: $ways"
+echo "Tamaño: $size"
+echo "Cantidad de sets: $sets"
+echo "Tamaño de la línea: $linea bytes"
+
+echo ""
+
+echo "Tiempo de ejecución en modo normal: $tiempo_normal ms"
+echo "Tasa de miss en modo normal: $mr_normal "
+echo "Tiempo de ejecución en modo optimizado: $tiempo_ca ms"
+echo "Tasa de miss en en modo optimizado: $mr_ca "
+echo
+echo "Speedup logrado: $spu "
+echo "Cociente de tasas de miss: $cmr "
+echo
+
+
+
+
+fi
+
+
