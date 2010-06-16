@@ -46,7 +46,7 @@ En el presente trabajo se hara uso de las t\'ecnicas de optimizaci\'on de uso de
 \section{Consideraciones sobre el desarrollo e implementaci\'on}
 A continuaci\'on se detallan las consideraciones tenidas en cuenta para el desarrollo del trabajo pr\'actico. 
 
-En esta secci\'on se discutir\'an los m\'etodos de optimizaci\'on que fueron implementados en la versi\'on final del trabajo pr\'actico. Tambi\'en se expondr\'an los resultados obtenidos de las mejoras introducidas en el c\'odigo, basados en las pruebas realizadas seg\'un se expone en la secci\'on 3.
+En esta secci\'on se discutir\'an los m\'etodos de optimizaci\'on que fueron implementados en la versi\'on final del trabajo pr\'actico. Tambi\'en se expondr\'an los resultados obtenidos de las mejoras introducidas en el c\'odigo, basados en las pruebas realizadas seg\'un se expone en la secci\'on 4.
 
 \subsection{Elecci\'on del nivel de memoria a optimizar}
 Para reducir la brecha de velocidad entre el procesador y la memoria f\'isica,
@@ -278,6 +278,19 @@ Como conclusi\'on decidimos presentar esta \'ultima opci\'on dado que presenta u
 \section{C\'odigo fuente original} 
 \begin{verbatim}
 
+int main(void)
+{
+
+double a[N][N], b[N][N], c[N][N];
+  int i,j,k;
+  for (i=0; i<N; i++)
+    for (j=0; j<N; j++)
+      for (k=0; k<N; k++)
+          c[i][j] += a[i][k] * b[k][j];
+
+  return 0;
+}
+
 
  
 
@@ -285,23 +298,122 @@ Como conclusi\'on decidimos presentar esta \'ultima opci\'on dado que presenta u
 
 \end{verbatim}
 
-\pagebreak
 \section{C\'odigo fuente modificado} 
 
 A continuaci\'on se incluye el c\'odigo fuente del programa, con las modificaciones incorporadas.
 
 \begin{verbatim}
 
+#define N 576
+#include <string.h>
+#include <stdio.h>
+
+#define D 8
+#define CE 8 /*NOTA: esto es solo un ejemplo para un tamano de linea de 64 bytes. Esta constante se modifica al instalar el programa y se adapta a 
+cada arquitectura */
+
+
+/*obtiene el blocking factor B */
+int calcularB(int distancia){
+
+
+	return (CE*distancia);
+
+}
+
+int min(int a,int b)
+{
+	if (a<b) 
+		return(a);
+	else
+		return(b);	
+}
+
+
+/* ejecucion del programa*/
+
+void ejecutar(int pad,int B, int distancia){
+
+double a[N][N],pad1[pad],b[N][N],pad2[pad],c[N][N];
+int i0,j0,k0,i,j,k;
+   for (i0=0;i0<N;i0+=B)
+    for (j0=0;j0<N;j0+=B)
+     for (k0=0;k0<N;k0+=B){			 
+      /* PROLOGO*/
+      /* proceso la primera linea*/
+
+      for (k=k0; k<=min(k0+B-1,(N-1)); k+=CE){
+        __builtin_prefetch(&a[i0][k]);
+        /* proceso toda la matriz a menos la ultima fila */
+
+        for (i=i0;i<=min(i0+B-1,(N-1))-1;i++)      
+          for (k=k0;k<=min(k0+B-1,(N-1));k+=CE){
+            __builtin_prefetch(&a[i+1][k]);
+            for (j=j0;j<=min(j0+B-1,(N-1));j++){
+
+/* NOTA: esto es un ejemplo de codigo para una computadora donde entran 8 doubles en una linea. 
+El desarrollo del lazo varia de acuerdo a la computadora donde se instala el programa, para
+ contamplar la cantidad de doubles que entran en una linea*/
+
+                    c[i][j]+=a[i][k+0]*b[k+0][j];
+                    c[i][j]+=a[i][k+1]*b[k+1][j];
+                    c[i][j]+=a[i][k+2]*b[k+2][j];
+                    c[i][j]+=a[i][k+3]*b[k+3][j];
+                    c[i][j]+=a[i][k+4]*b[k+4][j];
+                    c[i][j]+=a[i][k+5]*b[k+5][j];
+                    c[i][j]+=a[i][k+6]*b[k+6][j];
+                    c[i][j]+=a[i][k+7]*b[k+7][j];
+                    /*EXPANSION*/
+                    }
+                   }	
+
+
+            /* EPILOGO*/
+           /*proceso la ultima liInea*/
+            for (i=min(i0+B-1,(N-1))-1;i<=min(i0+B-1,(N-1));i++)
+                for (k=k0;k<=min(k0+B-1,(N-1));k++)
+                   for (j=j0;j<=min(j0+B-1,(N-1));j++)
+                        c[i][j]+=a[i][k]*b[k][j];
+
+
+
+                        }
+
+
+
+
+}
+
+
+int main(int argc, char** argv)
+{
+
+int m,pad,B;
+/*obtengo el tamano de la linea*/
+m=atoi(argv[1]);
+
+/* calculo el pad, multiplo del tama\~no de la linea*/
+pad=m*2;
+
+/*obtengo el blocking factor*/
+B=calcularB(D);
+
+ejecutar(pad,B,D);
+
+
+
+return(0);
+
+
 
 \end{verbatim}
 
 
 
-\pagebreak
-
 \section{C\'odigo en shell script de instalar y tp2} 
 
 A continuaci\'on se incluyen los  archivos ejecutables que realizan la instalaci\'on y medici\'on de tiempos de ejecuci\'on y miss rates.
+
 \pagebreak
 
 
