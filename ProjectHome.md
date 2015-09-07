@@ -1,0 +1,1 @@
+TP0: dc - TP1: Producto de convolución discreto en MIPS - TP2: Optimización de multiplicación de matrices
